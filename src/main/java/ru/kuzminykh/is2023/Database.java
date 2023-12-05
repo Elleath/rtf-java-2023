@@ -22,9 +22,33 @@ public class Database {
         conn.close();
     }
 
+    /**
+     * Выведите в консоль учебное заведение, с количеством студентов равному
+     * от 5000 до 7500 и с 10000 до 11000,
+     * с самым высоким показателем по математике (math)
+     * */
+    public String task3() throws SQLException {
+        String answer = null;
+
+        try (Statement stat = conn.createStatement()) {
+            ResultSet ans = stat.executeQuery("SELECT school " +
+                                                    "FROM (SELECT * FROM Schools WHERE (students BETWEEN 5000 AND 7500) " +
+                                                    "OR (students BETWEEN 10000 AND 11000)) " +
+                                                    "WHERE math = (SELECT MAX(math) FROM Schools " +
+                                                    "WHERE (students BETWEEN 5000 AND 7500) " +
+                                                    "OR (students BETWEEN 10000 AND 11000))");
+            answer = ans.getString("school");
+            System.out.println(ans.getString("school"));
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return answer;
+    }
+
     public void createTable(String name) throws SQLException {
-        try (Statement statement = conn.createStatement()) {
-            statement.execute("CREATE TABLE IF NOT EXISTS " + name + " " +
+        try (Statement stat = conn.createStatement()) {
+            stat.execute("CREATE TABLE IF NOT EXISTS " + name + " " +
                     "('id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "'district' INT NOT NULL, " +
                     "'school' TEXT NOT NULL, " +
@@ -40,7 +64,8 @@ public class Database {
                     "'english' DOUBLE," +
                     "'read' DOUBLE," +
                     "'math' DOUBLE);");
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
     }
