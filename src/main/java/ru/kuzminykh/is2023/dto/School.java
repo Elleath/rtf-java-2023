@@ -2,6 +2,8 @@ package ru.kuzminykh.is2023.dto;
 
 import lombok.Data;
 
+import java.util.Objects;
+
 @Data
 public class School {
     private int district;
