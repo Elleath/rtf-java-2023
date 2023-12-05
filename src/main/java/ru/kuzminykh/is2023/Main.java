@@ -2,9 +2,8 @@ package ru.kuzminykh.is2023;
 
 import ru.kuzminykh.is2023.dto.School;
 
+import java.awt.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -36,6 +35,25 @@ public class Main {
                 }
 
                 switch (input) {
+                    case "1":
+                        String[] counties = new String[] {"Butte", "Fresno", "Tulare", "Kern", "Merced", "Los Angeles",
+                                                        "Shasta", "Santa Barbara", "Riverside", "Orange"};
+                        double[] studentsAverage = db.task1(counties);
+                        System.out.println("Среднее количество учеников в школе по округу:");
+                        for (int i = 0; i < studentsAverage.length; i++) {
+                            System.out.println(counties[i] + ": " + studentsAverage[i] + " учеников");
+                        }
+
+                        System.out.println("\nПолученная гистограмма открылась в новом окне!");
+
+                        EventQueue.invokeLater(() -> {
+                            Chart chart = new Chart(counties, studentsAverage);
+                            chart.setVisible(true);
+                        });
+                        break;
+                    case "2":
+                        System.out.println("В разработке");
+                        break;
                     case "3":
                         String result = db.task3();
                         System.out.println("Учебное заведение с количеством студентов в диапазонах от 5000 до 7500 " +

@@ -22,7 +22,30 @@ public class Database {
         conn.close();
     }
 
-    /**
+    /** TASK 1
+     * Постройте график по среднему количеству студентов, в 10 различных странах, взять на свой выбор
+     *
+     * Comment: в таблице нет стран, county - округ
+     * Среднее подсчитано как (общее количество учеников во всех школах округа)/(количество школ в округе)
+     * */
+    public double[] task1(String[] counties) throws SQLException {
+        double[] result = new double[10];
+        try (PreparedStatement pstms = conn.prepareStatement("SELECT SUM(students)/COUNT(students) " +
+                                                                "FROM Schools WHERE county = ?")) {
+            for (int i = 0; i < counties.length; i++) {
+                try {
+                    pstms.setString(1, counties[i]);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                ResultSet res = pstms.executeQuery();
+                result[i] = res.getDouble(1);
+            }
+        }
+        return result;
+    }
+
+    /** TASK 3
      * Выведите в консоль учебное заведение, с количеством студентов равному
      * от 5000 до 7500 и с 10000 до 11000,
      * с самым высоким показателем по математике (math)
@@ -38,7 +61,6 @@ public class Database {
                                                     "WHERE (students BETWEEN 5000 AND 7500) " +
                                                     "OR (students BETWEEN 10000 AND 11000))");
             answer = ans.getString("school");
-            System.out.println(ans.getString("school"));
         }
         catch (SQLException e) {
             e.printStackTrace();
