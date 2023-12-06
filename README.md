@@ -17,9 +17,7 @@
   <img src="https://github.com/Elleath/rtf-java-2023/assets/122267570/ed17f397-54e8-4636-9928-b280ffdf7aa7">
 </p>
    
-
-
-3. Результат решения первой задачи:
+2. Результат решения первой задачи:
 <p align="left">
   <img src="https://github.com/Elleath/rtf-java-2023/assets/122267570/fcc0f03d-1db9-46b2-96d9-cbe524b6a5e2">
 </p>
@@ -28,16 +26,20 @@
   <img src="https://github.com/Elleath/rtf-java-2023/assets/122267570/3a1e1535-4e21-427f-a714-d628104c4ca6">
 </p>
 
-5. Результат решения второй задачи:
-   ![image](https://github.com/Elleath/rtf-java-2023/assets/122267570/5c95c4bc-28fd-4f4d-a68c-f570abde7abd)
+3. Результат решения второй задачи:
+<p align="left">
+  <img src="https://github.com/Elleath/rtf-java-2023/assets/122267570/5c95c4bc-28fd-4f4d-a68c-f570abde7abd">
+</p>
 
+4. Результат решения третьей задачи:
+<p align="left">
+  <img src="https://github.com/Elleath/rtf-java-2023/assets/122267570/609a3715-2574-46ab-be13-02cdb099b3a4">
+</p>
 
-6. Результат решения третьей задачи:
-   ![image](https://github.com/Elleath/rtf-java-2023/assets/122267570/609a3715-2574-46ab-be13-02cdb099b3a4)
-
-
-7. Завершение работы программы:
-   ![image](https://github.com/Elleath/rtf-java-2023/assets/122267570/d72d1abe-ab45-4c61-a6ae-2f8de60a44db)
+5. Завершение работы программы:
+<p align="left">
+  <img src="https://github.com/Elleath/rtf-java-2023/assets/122267570/d72d1abe-ab45-4c61-a6ae-2f8de60a44db">
+</p>
 
 
 
