@@ -14,6 +14,9 @@ public class Main {
         List<School> schoolList = parser.parseCsvFile("Schools.csv");
         Database db = new Database();
 
+        /**
+         * db.createTable и db.saveSchools необходимо использовать только при первом запуске
+         * */
         try {
             db.connect("project");
             db.createTable("Schools");
