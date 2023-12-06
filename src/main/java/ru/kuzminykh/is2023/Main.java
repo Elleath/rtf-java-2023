@@ -16,13 +16,14 @@ public class Main {
 
         try {
             db.connect("project");
-            //db.createTable("Schools");
-            //db.saveSchools(schoolList);
-            System.out.println("Доступны следующие действия:\n" +
-                    "1 - Вывести ответ на первое задание\n" +
-                    "2 - Вывести ответ на второе задание\n" +
-                    "3 - Вывести ответ на третье задание\n" +
-                    "4 - Завершить работу программы");
+            db.createTable("Schools");
+            db.saveSchools(schoolList);
+            System.out.println("""
+                    Доступны следующие действия:
+                    1 - Вывести ответ на первое задание
+                    2 - Вывести ответ на второе задание
+                    3 - Вывести ответ на третье задание
+                    4 - Завершить работу программы""");
 
             Scanner in = new Scanner(System.in);
             while (true) {
@@ -51,18 +52,28 @@ public class Main {
                             chart.setVisible(true);
                         });
                         break;
+
                     case "2":
-                        System.out.println("В разработке");
+                        String[] countiesTask2 = new String[] {"Fresno", "Contra Costa", "El Dorado", "Glenn"};
+                        List<String> averageExpenditure = db.task2(countiesTask2);
+                        System.out.println("Среднее количество расходов в школах с доходом больше 10: ");
+                        for (int i = 0; i < averageExpenditure.size(); i++) {
+                            System.out.println("В округе " + countiesTask2[i] + ": " +
+                                    averageExpenditure.get(i) + " единиц");
+                        }
                         break;
+
                     case "3":
                         String result = db.task3();
                         System.out.println("Учебное заведение с количеством студентов в диапазонах от 5000 до 7500 " +
                                 "и 10000 до 11000 c самым высоким баллом по математике: " + result);
                         break;
+
                     case "4":
                         db.close();
                         System.out.println("Работа программы завершена");
                         System.exit(0);
+
                     default:
                         System.out.println("Неизвестная команда");
                         break;

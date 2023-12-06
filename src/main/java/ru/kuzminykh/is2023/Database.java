@@ -3,14 +3,30 @@ package ru.kuzminykh.is2023;
 import ru.kuzminykh.is2023.dto.School;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Database {
     Connection conn;
-    public final static String PREP_STATMENT =
+    public final static String PREP_STATEMENT =
             "INSERT INTO Schools (district, school, county, grades, students, teachers, calworks," +
                     "lunch, computer, expenditure, income, english, read, math) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    public final static String TASK1_STATEMENT = "SELECT SUM(students)/COUNT(students) " +
+                                                "FROM Schools WHERE county = ?";
+
+    public final static String TASK2_STATEMENT = "SELECT SUM(expenditure)/count(expenditure) FROM Schools " +
+                                                "WHERE county = ? AND income > 10";
+
+    public final static String TASK3_STATEMENT = "SELECT school " +
+                                                "FROM (SELECT * FROM Schools WHERE (students BETWEEN 5000 AND 7500) " +
+                                                "OR (students BETWEEN 10000 AND 11000)) " +
+                                                "WHERE math = (SELECT MAX(math) FROM Schools " +
+                                                "WHERE (students BETWEEN 5000 AND 7500) " +
+                                                "OR (students BETWEEN 10000 AND 11000))";
+
+
 
     public void connect(String dbName) throws SQLException {
         String url = "jdbc:sqlite:" + dbName + ".db";
@@ -30,8 +46,7 @@ public class Database {
      * */
     public double[] task1(String[] counties) throws SQLException {
         double[] result = new double[10];
-        try (PreparedStatement pstms = conn.prepareStatement("SELECT SUM(students)/COUNT(students) " +
-                                                                "FROM Schools WHERE county = ?")) {
+        try (PreparedStatement pstms = conn.prepareStatement(TASK1_STATEMENT)) {
             for (int i = 0; i < counties.length; i++) {
                 try {
                     pstms.setString(1, counties[i]);
@@ -40,6 +55,33 @@ public class Database {
                 }
                 ResultSet res = pstms.executeQuery();
                 result[i] = res.getDouble(1);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * TASK 2
+     * Выведите в консоль среднее количество расходов(expenditure) в Fresno, Contra Costa,
+     * El Dorado и Glenn, у которых расход больше 10.
+     *
+     * Comment: вероятно, в условии задания допущена ошибка, так как во всех школах расход
+     * в разы больше 10 (составляет 4000-5000 и более), поэтому подсчитано среднее количество расходов
+     * в школах с ДОХОДОМ (income) больше 10
+     *
+     * Среднее подсчитано как (общее количество расходов в школах округа)/(количество школ в округе)
+     * */
+    public List<String> task2(String[] counties) throws SQLException {
+        List<String> result = new ArrayList<>();
+        try (PreparedStatement pstms = conn.prepareStatement(TASK2_STATEMENT)) {
+            for (String county : counties) {
+                try {
+                    pstms.setString(1, county);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                ResultSet res = pstms.executeQuery();
+                result.add(String.format("%.2f",res.getDouble(1)));
             }
         }
         return result;
@@ -54,12 +96,7 @@ public class Database {
         String answer = null;
 
         try (Statement stat = conn.createStatement()) {
-            ResultSet ans = stat.executeQuery("SELECT school " +
-                                                    "FROM (SELECT * FROM Schools WHERE (students BETWEEN 5000 AND 7500) " +
-                                                    "OR (students BETWEEN 10000 AND 11000)) " +
-                                                    "WHERE math = (SELECT MAX(math) FROM Schools " +
-                                                    "WHERE (students BETWEEN 5000 AND 7500) " +
-                                                    "OR (students BETWEEN 10000 AND 11000))");
+            ResultSet ans = stat.executeQuery(TASK3_STATEMENT);
             answer = ans.getString("school");
         }
         catch (SQLException e) {
@@ -92,7 +129,7 @@ public class Database {
         }
     }
     public void saveSchools(List<School> schoolList) throws SQLException {
-        try (PreparedStatement pstms = conn.prepareStatement(PREP_STATMENT)) {
+        try (PreparedStatement pstms = conn.prepareStatement(PREP_STATEMENT)) {
             schoolList.stream().forEach(school -> {
                 try {
                     pstms.setInt(1, school.getDistrict());
