@@ -8,23 +8,37 @@ import java.util.List;
 
 public class Database {
     Connection conn;
-    public final static String PREP_STATEMENT =
-            "INSERT INTO Schools (district, school, county, grades, students, teachers, calworks," +
-                    "lunch, computer, expenditure, income, english, read, math) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private final static String[] PREP_STATEMENTS = new String[] {
+            "INSERT INTO Schools (district, school_name, county, grades) VALUES (?, ?, ?, ?);",
+            "INSERT INTO People (students, teachers) VALUES (?, ?);",
+            "INSERT INTO Computers (computers) VALUES (?);",
+            "INSERT INTO Money (expenditure, income) VALUES (?, ?);",
+            "INSERT INTO Scores (calworks, lunch, english, read, math) VALUES (?, ?, ?, ?, ?);"
+    };
 
-    public final static String TASK1_STATEMENT = "SELECT SUM(students)/COUNT(students) " +
-                                                "FROM Schools WHERE county = ?";
+    public final static String TASK1_STATEMENT = """
+                                                 SELECT SUM(students)/COUNT(students)
+                                                 FROM Schools INNER JOIN People USING(school_id)
+                                                 WHERE county = ?
+                                                 """;
 
-    public final static String TASK2_STATEMENT = "SELECT SUM(expenditure)/count(expenditure) FROM Schools " +
-                                                "WHERE county = ? AND income > 10";
+    public final static String TASK2_STATEMENT = """
+                                                SELECT SUM(expenditure)/count(expenditure)
+                                                FROM Schools INNER JOIN Money USING(school_id)
+                                                WHERE county = ? AND income > 10
+                                                """;
 
-    public final static String TASK3_STATEMENT = "SELECT school " +
-                                                "FROM (SELECT * FROM Schools WHERE (students BETWEEN 5000 AND 7500) " +
-                                                "OR (students BETWEEN 10000 AND 11000)) " +
-                                                "WHERE math = (SELECT MAX(math) FROM Schools " +
-                                                "WHERE (students BETWEEN 5000 AND 7500) " +
-                                                "OR (students BETWEEN 10000 AND 11000))";
+    public final static String TASK3_STATEMENT =
+            """
+            SELECT school_name
+            FROM (SELECT * FROM Schools INNER JOIN People USING(school_id)
+                                        INNER JOIN Scores USING(school_id)
+                                        WHERE (students BETWEEN 5000 AND 7500) OR (students BETWEEN 10000 AND 11000))
+            WHERE math = (SELECT MAX(math) FROM Schools
+                                        INNER JOIN People USING(school_id)
+                                        INNER JOIN Scores USING(school_id)
+                                        WHERE (students BETWEEN 5000 AND 7500) OR (students BETWEEN 10000 AND 11000))
+            """;
 
 
 
@@ -97,7 +111,7 @@ public class Database {
 
         try (Statement stat = conn.createStatement()) {
             ResultSet ans = stat.executeQuery(TASK3_STATEMENT);
-            answer = ans.getString("school");
+            answer = ans.getString("school_name");
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -105,21 +119,33 @@ public class Database {
         return answer;
     }
 
-    public void createTable(String name) throws SQLException {
+    public void createTables() throws SQLException {
         try (Statement stat = conn.createStatement()) {
-            stat.execute("CREATE TABLE IF NOT EXISTS " + name + " " +
-                    "('id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+            stat.execute("CREATE TABLE IF NOT EXISTS Schools " +
+                    "('school_id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "'district' INT NOT NULL, " +
-                    "'school' TEXT NOT NULL, " +
-                    "'county' VARCHAR(30) NOT NULL," +
-                    "'grades' VARCHAR(10) NOT NULL, " +
-                    "'students' INT," +
-                    "'teachers' DOUBLE," +
+                    "'school_name' TEXT NOT NULL, " +
+                    "'county' VARCHAR(30) NOT NULL, " +
+                    "'grades' VARCHAR(10) NOT NULL);");
+
+            stat.execute("CREATE TABLE IF NOT EXISTS People " +
+                    "('school_id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "'students' INT, " +
+                    "'teachers' DOUBLE);");
+
+            stat.execute("CREATE TABLE IF NOT EXISTS Money " +
+                    "('school_id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "'expenditure' DOUBLE," +
+                    "'income' DOUBLE);");
+
+            stat.execute("CREATE TABLE IF NOT EXISTS Computers " +
+                    "('school_id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "'computers' INT);");
+
+            stat.execute("CREATE TABLE IF NOT EXISTS Scores " +
+                    "('school_id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "'calworks' DOUBLE," +
                     "'lunch' DOUBLE," +
-                    "'computer' INT," +
-                    "'expenditure' DOUBLE," +
-                    "'income' DOUBLE," +
                     "'english' DOUBLE," +
                     "'read' DOUBLE," +
                     "'math' DOUBLE);");
@@ -128,31 +154,43 @@ public class Database {
             e.printStackTrace();
         }
     }
-    public void saveSchools(List<School> schoolList) throws SQLException {
-        try (PreparedStatement pstms = conn.prepareStatement(PREP_STATEMENT)) {
-            schoolList.stream().forEach(school -> {
-                try {
-                    pstms.setInt(1, school.getDistrict());
-                    pstms.setString(2, school.getSchool());
-                    pstms.setString(3, school.getCounty());
-                    pstms.setString(4, school.getGrades());
-                    pstms.setInt(5, school.getStudents());
-                    pstms.setDouble(6, school.getTeachers());
-                    pstms.setDouble(7, school.getCalworks());
-                    pstms.setDouble(8, school.getLunch());
-                    pstms.setInt(9, school.getComputer());
-                    pstms.setDouble(10, school.getExpenditure());
-                    pstms.setDouble(11, school.getIncome());
-                    pstms.setDouble(12, school.getEnglish());
-                    pstms.setDouble(13, school.getRead());
-                    pstms.setDouble(14, school.getMath());
-                    pstms.addBatch();
-                }
-                catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            });
-            pstms.executeBatch();
-        }
+
+     public void saveSchools(List<School> schoolList) throws SQLException {
+         schoolList.stream().forEach(school -> {
+             try {
+                PreparedStatement pstms = null;
+                pstms = conn.prepareStatement(PREP_STATEMENTS[0]);
+                pstms.setInt(1, school.getDistrict());
+                pstms.setString(2, school.getSchool());
+                pstms.setString(3, school.getCounty());
+                pstms.setString(4, school.getGrades());
+                pstms.executeUpdate();
+
+                pstms = conn.prepareStatement(PREP_STATEMENTS[1]);
+                pstms.setInt(1, school.getStudents());
+                pstms.setDouble(2, school.getTeachers());
+                pstms.executeUpdate();
+
+                 pstms = conn.prepareStatement(PREP_STATEMENTS[2]);
+                 pstms.setInt(1, school.getComputer());
+                 pstms.executeUpdate();
+
+                 pstms = conn.prepareStatement(PREP_STATEMENTS[3]);
+                 pstms.setDouble(1, school.getExpenditure());
+                 pstms.setDouble(2, school.getIncome());
+                 pstms.executeUpdate();
+
+                 pstms = conn.prepareStatement(PREP_STATEMENTS[4]);
+                 pstms.setDouble(1, school.getCalworks());
+                 pstms.setDouble(2, school.getLunch());
+                 pstms.setDouble(3, school.getEnglish());
+                 pstms.setDouble(4, school.getRead());
+                 pstms.setDouble(5, school.getMath());
+                 pstms.executeUpdate();
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

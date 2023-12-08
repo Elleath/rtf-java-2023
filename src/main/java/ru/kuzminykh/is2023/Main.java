@@ -19,7 +19,7 @@ public class Main {
          * */
         try {
             db.connect("project");
-            db.createTable("Schools");
+            db.createTables();
             db.saveSchools(schoolList);
             System.out.println("""
                     Доступны следующие действия:
